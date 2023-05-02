@@ -1,22 +1,27 @@
-def translate_file(filename):
+import translate.translate as t
+
+
+def translate_file(filename,newfilename):
     import re
-    file = open(fname, encoding='utf-16')
-    lista = list()
+    file = open(filename, encoding='utf-16')
+    new = open(newfilename, 'w', encoding='utf-16')
     for line in file:
-        line = line.rstrip()
-        reg = re.findall('^{.*}(.*)', line)
-        lista.append(reg)
-    return lista
+        match = re.fullmatch(r"({.*})(.*)", line.rstrip())
+        if match and len(match.groups()) == 2:
+            key = match.group(1)
+            value = match.group(2)
+            text = t.translate(value, "pl")
+            new.write(key + text + '\n')
+        else:
+            new.write(line)
 
 
 if __name__ == "__main__":
-    fname = input('Enter file name:')
-    ready_to_translate = translate_file(fname)
-
-import translate.translate as t
-text=list()
-for n in ready_to_translate:
-    for a in n:
-        btext=(t.translate(a, "pl"))
-        text.append(btext)
-
+    fname = input('Enter an original file name:')
+    nfile = input('Enter a new file name:')
+    try:
+        fhand = open(fname)
+    except:
+        print('File', fname, 'cannot be opened')
+        exit()
+    translate_file(fname, nfile)
