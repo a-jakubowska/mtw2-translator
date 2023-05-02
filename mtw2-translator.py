@@ -12,3 +12,11 @@ def translate_file(filename):
 if __name__ == "__main__":
     fname = input('Enter file name:')
     ready_to_translate = translate_file(fname)
+
+import translate.translate as t
+text=list()
+for n in ready_to_translate:
+    for a in n:
+        btext=(t.translate(a, "pl"))
+        text.append(btext)
+
