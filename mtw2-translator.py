@@ -4,7 +4,7 @@ import translate.translate as t
 def translate_file(filename):
     import re
     file = open(filename, encoding='utf-16')
-    new = open(input('Enter a file name:'), 'w', encoding='utf-16')
+    new = open(input('Enter a new file name:'), 'w', encoding='utf-16')
     for line in file:
         match = re.fullmatch(r"({.*})(.*)", line.rstrip())
         if match and len(match.groups()) == 2:
@@ -17,7 +17,7 @@ def translate_file(filename):
 
 
 if __name__ == "__main__":
-    fname = input('Enter file name:')
+    fname = input('Enter an original file name:')
     try:
         fhand = open(fname)
     except:
