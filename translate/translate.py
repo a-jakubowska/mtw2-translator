@@ -1,7 +1,7 @@
 """
 This is the translation module.
 
-The translation module supplies one function, tranlate().  For example,
+The translation module supplies one function, translate().  For example,
 
 >>> translate("Hello", "fr")
 'Bonjour'
