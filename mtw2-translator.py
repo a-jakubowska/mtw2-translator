@@ -1,6 +1,8 @@
 import translate.translate as t
+from pathlib import Path
 
 
+# przetłumacz tekst w pliku
 def translate_file(filename, newfilename, lang):
     import re
     file = open(filename, encoding='utf-16')
@@ -16,6 +18,21 @@ def translate_file(filename, newfilename, lang):
             new.write(line)
 
 
+# iteruj po folderze
+def translate_dir(dirname, lang):
+    dirpath = Path(dirname)
+    for file in dirpath.iterdir():
+        orig_file = file
+        translated_dir = orig_file.parent / lang
+        if not translated_dir.exists():
+            translated_dir.mkdir()
+        translated_file =
+
+        print(f"Translating {orig_file} to {translated_file} ({lang})")
+        translate_file(orig_file, translated_file, lang)
+
+
+# podaj język i nazwy plików
 if __name__ == "__main__":
     langdict = t.get_available_languages()
     print("Avaliable languages:")
@@ -29,17 +46,21 @@ if __name__ == "__main__":
         else:
             break
 
+    moddir = input('Enter a mod directory:')
 
-    fname = input('Enter an original file name:')
-    nfile = input('Enter a new file name:')
+    # From user: lang, moddir
+    translate_dir(moddir, lang)
 
-    try:
-        fhand = open(fname)
-    except:
-        print('File', fname, 'cannot be opened')
-        exit()
-
-    try:
-        translate_file(fname, nfile, lang)
-    except Exception as e:
-        print(f"File {fname} cannot be translated ({e})")
+    # fname = input('Enter an original file name:')
+    # nfile = input('Enter a new file name:')
+    #
+    # try:
+    #     fhand = open(fname)
+    # except:
+    #     print('File', fname, 'cannot be opened')
+    #     exit()
+    #
+    # try:
+    #     translate_file(fname, nfile, lang)
+    # except Exception as e:
+    #     print(f"File {fname} cannot be translated ({e})")
