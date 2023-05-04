@@ -37,6 +37,10 @@ def translate(text: str, target_lang: str) -> str:
     return text
 
 
+def get_available_languages():
+    import deep_translator as d
+    return d.GoogleTranslator().get_supported_languages(as_dict=True)
+
 def deepl_translate(text: str, target_lang: str, auth_key: str) -> str:
     """"Return a machine translation from DeepL for text.
 
