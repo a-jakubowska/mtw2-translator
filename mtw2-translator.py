@@ -38,8 +38,8 @@ if __name__ == "__main__":
     except:
         print('File', fname, 'cannot be opened')
         exit()
+
     try:
         translate_file(fname, nfile, lang)
     except Exception as e:
         print(f"File {fname} cannot be translated ({e})")
-
