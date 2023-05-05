@@ -7,6 +7,7 @@ This is the reference translation module.
 GameTextData = dict[str, str]
 Translation = dict[str, str]
 
+
 class RefTranslator:
     translations = []
 
@@ -15,9 +16,9 @@ class RefTranslator:
 
         >>> r = RefTranslator()
         >>> r.add_ref("./examples/prio1/org", "./examples/prio1/ref")
-        Collected 1 translated keys!
+        Collected 1 translated keys (100%)!
         >>> r.add_ref("./examples/prio2/org", "./examples/prio2/ref")
-        Collected 3 translated keys!
+        Collected 3 translated keys (100%)!
 
         :param original_dir:
         :param reference_dir:
@@ -28,10 +29,16 @@ class RefTranslator:
             import re
             res = {}
             with open(fname, encoding="utf16") as f:
+                last_key = None
                 for line in f:
-                    match = re.fullmatch(r"{(.*)}(.*)", line.rstrip())
+                    line = line.rstrip()
+                    match = re.fullmatch(r"{(.*)}(.*)", line)
                     if match and len(match.groups()) == 2:
-                        res[match.group(1)] = match.group(2)
+                        last_key = match.group(1)
+                        res[last_key] = match.group(2)
+                    elif last_key and res[last_key] == "":
+                        if not line.startswith("¬"):
+                            res[last_key] = line
             return res
 
         def get_dirdata(dname: Path) -> GameTextData:
@@ -57,15 +64,18 @@ class RefTranslator:
                     r = ref[key]
                     if o != r:
                         res[o] = r
-            return res
+            return res, allkeys
 
         orig = get_dirdata(Path(original_dir))
         # print(f"Collected {len(orig)} keys from original directory!")
         ref = get_dirdata(Path(reference_dir))
         # print(f"Collected {len(ref)} keys from reference translation directory!")
 
-        translation = get_translation(orig, ref)
-        print(f"Collected {len(translation)} translated keys!")
+        translation, keys = get_translation(orig, ref)
+        percentage = (len(translation) / len(keys)) * 100
+        n = sum(len(o.rstrip()) for o in orig)
+        print(f"There are {n} characters to translate!")
+        print(f"Collected {len(translation)} translated keys ({percentage:.0f}%)!")
         self.translations.append({
             "orig": original_dir,
             "ref": reference_dir,
@@ -77,9 +87,9 @@ class RefTranslator:
 
         >>> r = RefTranslator()
         >>> r.add_ref("./examples/prio1/org", "./examples/prio1/ref")
-        Collected 1 translated keys!
+        Collected 1 translated keys (100%)!
         >>> r.add_ref("./examples/prio2/org", "./examples/prio2/ref")
-        Collected 3 translated keys!
+        Collected 3 translated keys (100%)!
         >>> r.get_ref("Fire of Udûn")
         'Ogień Udunu'
         >>> r.get_ref("Ent Rage")

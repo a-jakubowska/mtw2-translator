@@ -66,11 +66,11 @@ def webgoogle_translate(text: str, target_lang: str) -> str:
     :param target_lang: Output language
     :return: Translated text in output language
     """
-    from googletranslatepy import Translator
+    import deep_translator as d
     target_lang = target_lang.lower()
     if target_lang == "en-gb" or target_lang == "en-us":
         target_lang = "en"
-    translator = Translator(target=target_lang)
+    translator = d.GoogleTranslator(target=target_lang)
     return translator.translate(text)
 
 
