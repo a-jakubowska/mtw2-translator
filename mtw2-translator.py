@@ -2,6 +2,7 @@ import translate as t
 import reference_translation as rt
 from pathlib import Path
 import traceback
+from tqdm import tqdm
 
 
 def translate_file(filename, newfilename, source_lang, target_lang, ref_translator):
@@ -11,7 +12,7 @@ def translate_file(filename, newfilename, source_lang, target_lang, ref_translat
     keys_translated = 0
     keys_referenced = 0
     keys_intact = 0
-    for line in file:
+    for line in tqdm(file, unit="line"):
         match = re.fullmatch(r"({.*})(.*)", line.rstrip())
         if match and len(match.groups()) == 2:
             key = match.group(1)
