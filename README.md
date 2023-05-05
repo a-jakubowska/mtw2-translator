@@ -1,11 +1,21 @@
 # mtw2-translator
 Translator for Medieval Total War II mods
 
-## Usage
+#Usage
 
-```commandline
-py mtw2-translator.py
-```
+Steps to Follow:
+
+1. Optional - Install Pthon version
+2. Download and run mtw2-translator exe file
+4. In opened console type language and folder name (see example)
+5. In case you have any referance translation, you can also use them
+6. Warning! Program is using web version of Google Translator,it can take long time to process. 
+7. Remove .bin files in Medieval Total War II Mod folder. 
+8. Restart the game and enjoy!
+
+
+## Example
+
 
 ```commandline
 Avaliable languages:
@@ -26,9 +36,12 @@ Moving D:\mods\DaC_v5\data\text to D:\mods\DaC_v5\data\text-backup
 Moving D:\mods\DaC_v5\data\text-pl to D:\mods\DaC_v5\data\text
 ```
 
-### DeepL
+# Experimental 
+
+## DeepL
 
 You can use DeepL translation, but you need to provide API key
+You need to execute script from .py, not from exe!
 
 ```commandline
 set DEEPL_API_KEY="asd...43fsat"
