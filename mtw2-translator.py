@@ -42,10 +42,10 @@ def translate_dir(dirname: str, lang: str, ref_translator: rt.RefTranslator) -> 
     backup_path = Path(str(dirpath) + "-backup")
 
     # rename paths
-    # print(f"Moving {dirpath.name} to {backup_path.name}")
-    # dirpath.rename(backup_path)
-    # print(f"Moving {translated_dir.name} to {orig_path.name}")
-    # translated_dir.rename(orig_path)
+    print(f"Moving {dirpath.name} to {backup_path.name}")
+    dirpath.rename(backup_path)
+    print(f"Moving {translated_dir.name} to {orig_path.name}")
+    translated_dir.rename(orig_path)
 
 
 def input_dir(prompt):
