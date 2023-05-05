@@ -7,20 +7,34 @@ def translate_file(filename, newfilename, lang, ref_translator):
     import re
     file = open(filename, encoding='utf-16')
     new = open(newfilename, 'w', encoding='utf-16')
+    keys_translated = 0
+    keys_referenced = 0
+    keys_intact = 0
     for line in file:
         match = re.fullmatch(r"({.*})(.*)", line.rstrip())
         if match and len(match.groups()) == 2:
             key = match.group(1)
             value = match.group(2)
-            # Translate string
-            text = ref_translator.get_ref(value)
-            if text is None:
-                text = t.translate(value, lang)
-            # Write to file
-            new.write(key + text + '\n')
+            try:
+                # Translate string
+                text = ref_translator.get_ref(value)
+                if text is None:
+                    text = t.translate(value, lang)
+                    if text is None:
+                        text = value
+                        keys_intact = keys_intact + 1
+                    else:
+                        keys_translated = keys_translated + 1
+                else:
+                    keys_referenced = keys_referenced + 1
+                # Write to file
+                new.write(key + text + '\n')
+            except Exception as e:
+                raise RuntimeError(f"Cannot translate {key}:{value} to {text}")
         else:
             new.write(line)
 
+    return keys_referenced, keys_translated, keys_intact
 
 def translate_dir(dirname: str, lang: str, ref_translator: rt.RefTranslator) -> None:
     # Create Path object from string
@@ -32,10 +46,28 @@ def translate_dir(dirname: str, lang: str, ref_translator: rt.RefTranslator) -> 
         translated_dir.mkdir()
 
     # Translate file-by-file
+    keys_referenced = 0
+    keys_translated = 0
+    keys_intact = 0
     for orig_file in dirpath.glob('*.txt'):
         translated_file = translated_dir / orig_file.name
         print(f"Translating {orig_file} to {translated_file} ({lang}). Please be patient, it can take few minutes.")
-        translate_file(orig_file, translated_file, lang, ref_translator)
+        ref, trans, intact = translate_file(orig_file, translated_file, lang, ref_translator)
+        print(f"{orig_file} translated ({ref} from reference translations, {trans} translated, {intact} left intact)")
+        keys_referenced = keys_referenced + ref
+        keys_translated = keys_translated + trans
+        keys_intact = keys_intact + intact
+
+    # Summary
+    print(f"Directory {dirpath} translated with:")
+    keys_total = keys_referenced + keys_translated + keys_intact
+    print("\t*",f"{keys_total} strings translated")
+    ref_percent = (keys_referenced / keys_total) * 100
+    print("\t*",f"{keys_referenced} strings taken from reference translations ({ref_percent:.0f}%)")
+    trans_percent = (keys_translated / keys_total) * 100
+    print("\t*", f"{keys_translated} strings machine translated ({trans_percent:.0f}%)")
+    intact_percent = (keys_intact / keys_total) * 100
+    print("\t*",f"{keys_intact} strings left intact ({intact_percent:.0f}%)")
 
     # Set desired paths
     orig_path = dirpath
@@ -96,18 +128,18 @@ def input_reference_translations():
 
 
 if __name__ == "__main__":
-    try:
-        lang = input_lang()
-        moddir = input_dir('Enter a mod directory:')
-        ref_translator = input_reference_translations()
+    # try:
+    lang = input_lang()
+    moddir = input_dir('Enter a mod directory:')
+    ref_translator = input_reference_translations()
 
-        # translation
-        translate_dir(moddir, lang, ref_translator)
+    # translation
+    translate_dir(moddir, lang, ref_translator)
 
-        print(f"Files in {moddir} replaced with {lang} translation!")
-    except Exception as e:
-        print("Something went wrong, details:")
-        print(e)
-
-    print()
-    input("Press any key to proceed...")
+    print(f"Files in {moddir} replaced with {lang} translation!")
+    # except Exception as e:
+    #     print("Something went wrong, details:")
+    #     print(e)
+    #
+    # print()
+    # input("Press any key to proceed...")
