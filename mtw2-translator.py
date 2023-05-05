@@ -59,7 +59,9 @@ def input_dir(prompt):
         else:
             print("Path does not exists! Try again.")
 
+
 def input_lang():
+    print("Downloading available languages...")
     langdict = t.get_available_languages()
     print("Avaliable languages:")
     for full_lang_name, abbr in langdict.items():
@@ -71,6 +73,7 @@ def input_lang():
             print("Wrong language. Try again.")
         else:
             return lang
+
 
 def input_reference_translations():
     ref_translator = rt.RefTranslator()
@@ -91,10 +94,20 @@ def input_reference_translations():
 
     return ref_translator
 
-if __name__ == "__main__":
-    lang = input_lang()
-    moddir = input_dir('Enter a mod directory:')
-    ref_translator = input_reference_translations()
 
-    # translation
-    translate_dir(moddir, lang, ref_translator)
+if __name__ == "__main__":
+    try:
+        lang = input_lang()
+        moddir = input_dir('Enter a mod directory:')
+        ref_translator = input_reference_translations()
+
+        # translation
+        translate_dir(moddir, lang, ref_translator)
+
+        print(f"Files in {moddir} replaced with {lang} translation!")
+    except Exception as e:
+        print("Something went wrong, details:")
+        print(e)
+
+    print()
+    input("Press any key to proceed...")
