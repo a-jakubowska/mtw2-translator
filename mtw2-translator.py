@@ -35,7 +35,7 @@ def translate_dir(dirname: str, lang: str) -> None:
 
     # Set desired paths
     orig_path = dirpath
-    backup_path = Path(str(dirpath) + "-orig")
+    backup_path = Path(str(dirpath) + "-backup")
 
     # rename paths
     print(f"Moving {dirpath.name} to {backup_path.name}")
