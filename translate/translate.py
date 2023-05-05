@@ -70,18 +70,26 @@ def webgoogle_translate(text: str, source_lang: str, target_lang: str) -> str:
     """
     from deep_translator import GoogleTranslator
     from deep_translator.exceptions import NotValidLength
+    import textwrap
 
     target_lang = target_lang.lower()
     if target_lang == "en-gb" or target_lang == "en-us":
         target_lang = "en"
     translator = GoogleTranslator(source=source_lang, target=target_lang)
+    max_text_length = 5000
+    texts = []
+    if len(text) > max_text_length:
+        texts = text.split("\\n")
+    else:
+        texts.append(text)
+    translations = []
     try:
-        translation = translator.translate(text)
+        translations = translator.translate_batch(texts)
     except NotValidLength as e:
-        raise ValueError(f"Text too long (max 5000, text {len(text)})")
-    # sanitize output
-    translation.replace('\u200c', '')
-    return translation
+        raise ValueError(f"Text too long (max 5000, text {len(t)})")
+    for t in translations:
+        t.replace('\u200c', '')
+    return "\\n".join(translations)
 
 
 if __name__ == "__main__":
