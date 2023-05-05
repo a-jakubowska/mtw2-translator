@@ -21,12 +21,12 @@ def translate_file(filename, newfilename, lang):
 # iteruj po folderze
 def translate_dir(dirname, lang):
     dirpath = Path(dirname)
-    for file in dirpath.iterdir():
+    for file in dirpath.glob('*.txt'):
         orig_file = file
         translated_dir = orig_file.parent / lang
         if not translated_dir.exists():
             translated_dir.mkdir()
-        translated_file =
+        translated_file = translated_dir/orig_file.name
 
         print(f"Translating {orig_file} to {translated_file} ({lang})")
         translate_file(orig_file, translated_file, lang)
