@@ -34,7 +34,7 @@ def translate_dir(dirname: str, lang: str, ref_translator: rt.RefTranslator) -> 
     # Translate file-by-file
     for orig_file in dirpath.glob('*.txt'):
         translated_file = translated_dir / orig_file.name
-        print(f"Translating {orig_file} to {translated_file} ({lang})")
+        print(f"Translating {orig_file} to {translated_file} ({lang}). Please be patient, it can take few minutes.")
         translate_file(orig_file, translated_file, lang, ref_translator)
 
     # Set desired paths
@@ -47,6 +47,7 @@ def translate_dir(dirname: str, lang: str, ref_translator: rt.RefTranslator) -> 
     # print(f"Moving {translated_dir.name} to {orig_path.name}")
     # translated_dir.rename(orig_path)
 
+
 def input_dir(prompt):
     while True:
         path = Path(input(prompt))
@@ -58,7 +59,7 @@ def input_dir(prompt):
         else:
             print("Path does not exists! Try again.")
 
-if __name__ == "__main__":
+def input_lang():
     langdict = t.get_available_languages()
     print("Avaliable languages:")
     for full_lang_name, abbr in langdict.items():
@@ -69,10 +70,9 @@ if __name__ == "__main__":
         if lang not in langdict.keys() and lang not in langdict.values():
             print("Wrong language. Try again.")
         else:
-            break
+            return lang
 
-    moddir = input_dir('Enter a mod directory:')
-
+def input_reference_translations():
     ref_translator = rt.RefTranslator()
 
     first_question = True
@@ -88,6 +88,13 @@ if __name__ == "__main__":
         if ref_translation_needed == 'n':
             break
         first_question = False
+
+    return ref_translator
+
+if __name__ == "__main__":
+    lang = input_lang()
+    moddir = input_dir('Enter a mod directory:')
+    ref_translator = input_reference_translations()
 
     # translation
     translate_dir(moddir, lang, ref_translator)

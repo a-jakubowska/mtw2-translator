@@ -48,9 +48,7 @@ class RefTranslator:
                     keys = get_filedata(filepath)
                     res.update(keys)
                 except Exception as e:
-                    print(f"Cannot process {filepath}!")
-                    print(e)
-                    print("Continue to the next file...")
+                    print(f"Cannot process {filepath} ({e})! Continue to the next file...")
             return res
 
         def get_translation(o: GameTextData, r: GameTextData) -> Translation:
