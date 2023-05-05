@@ -1,7 +1,7 @@
 # mtw2-translator
 Translator for Medieval Total War II mods
 
-#Usage
+# Usage
 
 Steps to Follow:
 
@@ -9,7 +9,7 @@ Steps to Follow:
 2. Download and run mtw2-translator exe file
 4. In opened console type language and folder name (see example)
 5. In case you have any referance translation, you can also use them
-6. Warning! Program is using web version of Google Translator,it can take long time to process. 
+6. ❗Program is using web version of Google Translator,it can take long time to process. 
 7. Remove .bin files in Medieval Total War II Mod folder. 
 8. Restart the game and enjoy!
 
