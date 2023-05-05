@@ -1,9 +1,10 @@
 import translate as t
 import reference_translation as rt
 from pathlib import Path
+import traceback
 
 
-def translate_file(filename, newfilename, lang, ref_translator):
+def translate_file(filename, newfilename, source_lang, target_lang, ref_translator):
     import re
     file = open(filename, encoding='utf-16')
     new = open(newfilename, 'w', encoding='utf-16')
@@ -19,7 +20,7 @@ def translate_file(filename, newfilename, lang, ref_translator):
                 # Translate string
                 text = ref_translator.get_ref(value)
                 if text is None:
-                    text = t.translate(value, lang)
+                    text = t.translate(value, source_lang, target_lang)
                     if text is None:
                         text = value
                         keys_intact = keys_intact + 1
@@ -30,18 +31,19 @@ def translate_file(filename, newfilename, lang, ref_translator):
                 # Write to file
                 new.write(key + text + '\n')
             except Exception as e:
-                raise RuntimeError(f"Cannot translate {key}:{value} to {text}")
+                raise RuntimeError(f"Cannot translate {key}{value} to {text}") from e
         else:
             new.write(line)
 
     return keys_referenced, keys_translated, keys_intact
 
-def translate_dir(dirname: str, lang: str, ref_translator: rt.RefTranslator) -> None:
+
+def translate_dir(dirname: str, source_lang: str, target_lang: str, ref_translator: rt.RefTranslator) -> None:
     # Create Path object from string
     dirpath = Path(dirname)
 
     # Create directory to store translations
-    translated_dir = dirpath.parent / (dirpath.name + "-" + lang)
+    translated_dir = dirpath.parent / (dirpath.name + "-" + target_lang)
     if not translated_dir.exists():
         translated_dir.mkdir()
 
@@ -51,8 +53,9 @@ def translate_dir(dirname: str, lang: str, ref_translator: rt.RefTranslator) -> 
     keys_intact = 0
     for orig_file in dirpath.glob('*.txt'):
         translated_file = translated_dir / orig_file.name
-        print(f"Translating {orig_file} to {translated_file} ({lang}). Please be patient, it can take few minutes.")
-        ref, trans, intact = translate_file(orig_file, translated_file, lang, ref_translator)
+        print(
+            f"Translating {orig_file} to {translated_file} ({target_lang}). Please be patient, it can take few minutes.")
+        ref, trans, intact = translate_file(orig_file, translated_file, source_lang, target_lang, ref_translator)
         print(f"{orig_file} translated ({ref} from reference translations, {trans} translated, {intact} left intact)")
         keys_referenced = keys_referenced + ref
         keys_translated = keys_translated + trans
@@ -61,13 +64,13 @@ def translate_dir(dirname: str, lang: str, ref_translator: rt.RefTranslator) -> 
     # Summary
     print(f"Directory {dirpath} translated with:")
     keys_total = keys_referenced + keys_translated + keys_intact
-    print("\t*",f"{keys_total} strings translated")
+    print("\t*", f"{keys_total} strings translated")
     ref_percent = (keys_referenced / keys_total) * 100
-    print("\t*",f"{keys_referenced} strings taken from reference translations ({ref_percent:.0f}%)")
+    print("\t*", f"{keys_referenced} strings taken from reference translations ({ref_percent:.0f}%)")
     trans_percent = (keys_translated / keys_total) * 100
     print("\t*", f"{keys_translated} strings machine translated ({trans_percent:.0f}%)")
     intact_percent = (keys_intact / keys_total) * 100
-    print("\t*",f"{keys_intact} strings left intact ({intact_percent:.0f}%)")
+    print("\t*", f"{keys_intact} strings left intact ({intact_percent:.0f}%)")
 
     # Set desired paths
     orig_path = dirpath
@@ -99,12 +102,21 @@ def input_lang():
     for full_lang_name, abbr in langdict.items():
         print(f"{full_lang_name} ({abbr})")
 
-    while True:
-        lang = input("Enter target languague:")
-        if lang not in langdict.keys() and lang not in langdict.values():
-            print("Wrong language. Try again.")
-        else:
-            return lang
+    def input_lang_raw(prompt, default=None):
+        if default is not None:
+            prompt = prompt[:-1] + f" (default: {default})" + prompt[-1]
+        while True:
+            lang = input(prompt)
+            if len(lang) == 0 and default is not None:
+                return default
+            if lang not in langdict.keys() and lang not in langdict.values():
+                print("Wrong language. Try again.")
+            else:
+                return lang
+
+    source = input_lang_raw("Enter source languague:", default="en")
+    target = input_lang_raw("Enter target languague:")
+    return source, target
 
 
 def input_reference_translations():
@@ -128,18 +140,18 @@ def input_reference_translations():
 
 
 if __name__ == "__main__":
-    # try:
-    lang = input_lang()
-    moddir = input_dir('Enter a mod directory:')
-    ref_translator = input_reference_translations()
+    try:
+        source_lang, target_lang = input_lang()
+        moddir = input_dir('Enter a mod directory:')
+        ref_translator = input_reference_translations()
 
-    # translation
-    translate_dir(moddir, lang, ref_translator)
+        # translation
+        translate_dir(moddir, source_lang, target_lang, ref_translator)
 
-    print(f"Files in {moddir} replaced with {lang} translation!")
-    # except Exception as e:
-    #     print("Something went wrong, details:")
-    #     print(e)
-    #
-    # print()
-    # input("Press any key to proceed...")
+        print(f"Files in {moddir} replaced with {target_lang} translation!")
+    except Exception:
+        print("Something went wrong, details:")
+        traceback.print_exc()
+
+    print()
+    input("Press any key to proceed...")
