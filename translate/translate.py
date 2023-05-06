@@ -6,6 +6,10 @@ The translation module supplies one function, translate().  For example,
 >>> translate("Hello", "auto", "fr")
 'Bonjour'
 """
+import os
+import logging
+from langdetect import detect
+import deep_translator as d
 
 
 def translate(text: str, source_lang: str, target_lang: str) -> str | None:
@@ -18,8 +22,6 @@ def translate(text: str, source_lang: str, target_lang: str) -> str | None:
     :param target_lang: Output language
     :return: Translated text in output language
     """
-    import os
-    import logging
     deepl_env_name = "DEEPL_API_KEY"
 
     try:
@@ -38,8 +40,11 @@ def translate(text: str, source_lang: str, target_lang: str) -> str | None:
 
 
 def get_available_languages():
-    import deep_translator as d
     return d.GoogleTranslator().get_supported_languages(as_dict=True)
+
+
+def detect_language(text):
+    return detect(text)
 
 
 def deepl_translate(text: str, target_lang: str, auth_key: str) -> str:
