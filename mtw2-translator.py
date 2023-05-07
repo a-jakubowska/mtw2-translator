@@ -1,23 +1,27 @@
 import translate as t
 import reference_translation as rt
-from pathlib import Path
+
+import re
+import sys
 import traceback
+from pathlib import Path
+
 from tqdm import tqdm
 
 
 def translate_file(filename, newfilename, source_lang, target_lang, ref_translator):
-    import re
     file = open(filename, encoding='utf-16')
     new = open(newfilename, 'w', encoding='utf-16')
     keys_translated = 0
     keys_referenced = 0
     keys_intact = 0
-    for line in tqdm(file, unit="line"):
+    for line in tqdm(file, unit="line", file=sys.stdout):
         match = re.fullmatch(r"({.*})(.*)", line.rstrip())
         if match and len(match.groups()) == 2:
             key = match.group(1)
             value = match.group(2)
             try:
+                comment = ""
                 # Translate string
                 text = ref_translator.get_ref(value)
                 if text is None:
@@ -26,17 +30,21 @@ def translate_file(filename, newfilename, source_lang, target_lang, ref_translat
                         text = value
                         keys_intact = keys_intact + 1
                     else:
+                        comment = f"¬>>>>> AUTO TRANSLATION >>>>> {value}\n"
                         keys_translated = keys_translated + 1
                 else:
                     keys_referenced = keys_referenced + 1
+                # Sanitize text
+                text.replace('\u200c', '')
                 # Write to file
-                new.write(key + text + '\n')
+                new.write(comment + key + text + '\n')
             except Exception as e:
                 raise RuntimeError(f"Cannot translate {key}{value} to {text}") from e
         else:
             new.write(line)
 
     return keys_referenced, keys_translated, keys_intact
+
 
 
 def translate_dir(dirname: str, source_lang: str, target_lang: str, ref_translator: rt.RefTranslator) -> None:
