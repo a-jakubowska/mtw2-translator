@@ -1,8 +1,10 @@
 import translate as t
 import reference_translation as rt
+from edit_data import edit_data
 
 import re
 import sys
+import json
 import textwrap
 import traceback
 from pathlib import Path
@@ -22,6 +24,7 @@ def translate_file(filename, newfilename, source_lang, target_lang, ref_translat
             key = match.group(1)
             value = match.group(2)
             try:
+                comment = ""
                 # Translate string
                 text = ref_translator.get_ref(value)
                 if text is None:
@@ -30,13 +33,14 @@ def translate_file(filename, newfilename, source_lang, target_lang, ref_translat
                         text = value
                         keys_intact = keys_intact + 1
                     else:
+                        comment = f"¬>>>>> AUTO TRANSLATION >>>>> {value}\n"
                         keys_translated = keys_translated + 1
                 else:
                     keys_referenced = keys_referenced + 1
                 # Sanitize text
                 text.replace('\u200c', '')
                 # Write to file
-                new.write(key + text + '\n')
+                new.write(comment + key + text + '\n')
             except Exception as e:
                 raise RuntimeError(f"Cannot translate {key}{value} to {text}") from e
         else:
@@ -130,24 +134,36 @@ def input_num(prompt, max_limit, min_limit=0):
 
 
 def resolve_duplicates_by_user(ref_translator, reference, translation, duplicates):
-    for duplicate_no, (orig, d) in enumerate(duplicates.items()):
-        print(f"=== Redefining translation ({duplicate_no}/{len(duplicates)}) ")
-        print()
-        print(textwrap.fill(orig))
-        print()
-        selections = []
-        for n, x in enumerate(d):
-            print(f"{n + 1}) [{x.file.name}:{x.line}][hits:{x.hits}][{x.key}]")
-            print("\t", textwrap.fill(x.text))
-            print()
-            selections.append(x.text)
-        selections.append(None)
-        print(f"{len(selections)}) None")
-        choice = input_num("Please select an option:", len(selections), 1) - 1
-        if selections[choice] is None:
-            ref_translator.update_translation(reference, translation, orig, selections[choice])
+    class DuplicatesEnv(json.JSONEncoder):
+        def default(self, obj):
+            if isinstance(obj, rt.DuplicateTranslation):
+                return {'file': str(obj.file), 'line': obj.line, 'hits': obj.hits, 'text': obj.text}
+            return json.JSONEncoder.default(self, obj)
+
+    print()
+    print(textwrap.fill("Program will open file editor for you to review duplicates. " +
+                        "File will be formatted as JSON (www.json.org) and " +
+                        "will be opened by editor associated with .json extension."))
+    print()
+    print("If you wish to remove reference translation, remove JSON entry.")
+    print("To select one translation, remove the others from the list associated with text")
+    print()
+
+    new_duplicates = edit_data(duplicates, encoding="utf16", cls=DuplicatesEnv)
+    print(f"Using {len(new_duplicates)} fixed reference translations...")
+    removed = 0
+    overwritten = 0
+    for orig, trans in duplicates.items():
+        if orig not in new_duplicates or not new_duplicates[orig]:
+            ref_translator.delete_translation(reference, trans, orig)
+            removed = removed + 1
         else:
-            ref_translator.delete_translation(reference, translation, orig)
+            if len(new_duplicates[orig]) > 1:
+                print(f"Warning (too many translations): Choosing first translation for {orig}")
+            ref_translator.update_translation(reference, translation, orig, new_duplicates[orig][0])
+            overwritten = overwritten + 1
+
+    print(f"Removed {removed} reference translations, overwritten {overwritten} translations")
 
 
 def find_unfitting_translations(translations, source_lang) -> set[str]:
@@ -164,7 +180,6 @@ def find_unfitting_translations(translations, source_lang) -> set[str]:
     to_remove = set()
     for i, translation in enumerate(translations.copy()):
         lang = t.detect_language(translation.text)
-        element_to_remove = None
         for j in range(i + 1, len(translations)):
             if translations[j].text.startswith(translation.text):
                 to_remove.add(translation.text)
@@ -239,7 +254,8 @@ def input_reference_translations(source_lang):
 
     return ref_translator
 
-def switch_dirs(source : Path, target : Path):
+
+def switch_dirs(source: Path, target: Path):
     # Set desired paths
     orig_path = target
     backup_path = Path(str(target) + "-backup")
