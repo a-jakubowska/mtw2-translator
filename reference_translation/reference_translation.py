@@ -3,6 +3,7 @@ This is the reference translation module.
 
 
 """
+import logging
 
 GameTextData = dict[str, str]
 Translation = dict[str, str]
@@ -48,7 +49,7 @@ class RefTranslator:
                     keys = get_filedata(filepath)
                     res.update(keys)
                 except Exception as e:
-                    print(f"Cannot process {filepath} ({e})! Continue to the next file...")
+                    logging.error(f"Cannot process {filepath} ({e})! Continue to the next file...")
             return res
 
         def get_translation(o: GameTextData, r: GameTextData) -> Translation:
@@ -72,8 +73,8 @@ class RefTranslator:
         translation, keys = get_translation(orig, ref)
         percentage = (len(translation) / len(keys)) * 100
         n = sum(len(o.rstrip()) for o in orig)
-        print(f"There are {n} characters to translate!")
-        print(f"Collected {len(translation)} translated keys ({percentage:.0f}%)!")
+        logging.info(f"There are {n} characters to translate!")
+        logging.info(f"Collected {len(translation)} translated keys ({percentage:.0f}%)!")
         self.translations.append({
             "orig": original_dir,
             "ref": reference_dir,
