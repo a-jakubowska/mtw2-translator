@@ -26,14 +26,13 @@ def translate(text: str, source_lang: str, target_lang: str) -> str | None:
         if deepl_env_name in os.environ:
             return deepl_translate(text, target_lang, os.environ[deepl_env_name])
     except Exception as e:
-        logging.warning("DeepL raised an error: ", e)
+        logging.debug("DeepL raised an error: ", e)
 
     try:
         return webgoogle_translate(text, source_lang=source_lang, target_lang=target_lang)
     except Exception as e:
-        logging.warning("Google Translator (web) raised an error: ", e)
+        logging.debug(f"Google Translator (web) raised an error: ({e})")
 
-    logging.error("Cannot provide a translation!")
     return None
 
 
@@ -87,8 +86,6 @@ def webgoogle_translate(text: str, source_lang: str, target_lang: str) -> str:
         translations = translator.translate_batch(texts)
     except NotValidLength as e:
         raise ValueError(f"Text too long (max 5000, text {len(t)})")
-    for t in translations:
-        t.replace('\u200c', '')
     return "\\n".join(translations)
 
 
